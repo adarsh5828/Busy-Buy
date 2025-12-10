@@ -8,7 +8,7 @@ import SignIn from "../../assets/Log in.png";
 import Logout from "../../assets/Log Out.png";
 import Cart from "../../assets/cart.png";
 
-import AuthContext from "../../context/Auth/AuthContext";
+import {AuthContext} from "../../context/Auth/AuthState";
 
 const Navbar = () => {
   const [click, setClick] = useState(false);

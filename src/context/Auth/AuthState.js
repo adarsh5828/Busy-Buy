@@ -1,16 +1,4 @@
-import { useReducer } from "react";
-import AuthContext from "./AuthContext";
-import AuthReducer from "./AuthReducer";
-import {
-  LOGIN_FAIL,
-  LOGIN_SUCCESS,
-  LOGOUT,
-  TOGGLE_LOADING,
-  CLEAR_ERROR_MESSAGE,
-  SIGNUP_FAIL,
-  SIGNUP_SUCCESS,
-  SET_AUTH_USER,
-} from "./types";
+import { createContext, useState } from "react";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -18,86 +6,98 @@ import {
   updateProfile,
   signOut,
 } from "firebase/auth";
+import AuthState from "../Products/ProductsState";
 
-const AuthState = ({ children }) => {
+export const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
   const auth = getAuth();
-  const initialState = {
-    user: null,
-    error: false,
-    message: "",
-    loading: false,
+
+  // ------------ STATE -------------
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState(false);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // ------------ setAuthUser (same name) -------------
+  const setAuthUser = (authUser) => {
+    setUser(authUser);
   };
 
-  const [state, dispatch] = useReducer(AuthReducer, initialState);
-
-  // Sets the authenticated user
-  const setAuthUser = (user) => {
-    dispatch({ type: SET_AUTH_USER, payload: user });
+  // ------------ changeLoadingState (same name) -------------
+  const changeLoadingState = () => {
+    setLoading((prev) => !prev);
   };
 
+  // ------------ login (same name) -------------
   const login = async (email, password) => {
-    dispatch({ type: TOGGLE_LOADING });
+    changeLoadingState();
+    setError(false);
+    setMessage("");
+
     try {
       const res = await signInWithEmailAndPassword(auth, email, password);
-      console.log(res);
-      dispatch({ type: LOGIN_SUCCESS, payload: res.user });
-    } catch (error) {
-      dispatch({
-        type: LOGIN_FAIL,
-        payload: error.message.split(": ")[1],
-      });
+      setUser(res.user);
+    } catch (err) {
+      setError(true);
+      setMessage(err.message.split(": ")[1]);
+    } finally {
+      changeLoadingState();
     }
   };
 
-  const signup = async (formData) => {
-    dispatch({ type: TOGGLE_LOADING });
-    try {
-      const { name, email, password } = formData;
+  // ------------ signup (same name) -------------
+  const signup = async ({ name, email, password }) => {
+    changeLoadingState();
+    setError(false);
+    setMessage("");
 
+    try {
       const res = await createUserWithEmailAndPassword(auth, email, password);
 
       await updateProfile(auth.currentUser, {
         displayName: name,
       });
 
-      dispatch({ type: SIGNUP_SUCCESS, payload: res.user });
-    } catch (error) {
-      console.log(error);
-      dispatch({
-        type: SIGNUP_FAIL,
-        payload: error.message.split(": ")[1],
-      });
+      setUser(res.user);
+    } catch (err) {
+      setError(true);
+      setMessage(err.message.split(": ")[1]);
+    } finally {
+      changeLoadingState();
     }
   };
 
+  // ------------ logout (same name) -------------
   const logout = async () => {
     try {
-      const res = await signOut(auth);
-      console.log(res);
-      dispatch({ type: LOGOUT, payload: "Signed out successfully!" });
-    } catch (error) {
-      dispatch({ type: CLEAR_ERROR_MESSAGE });
+      await signOut(auth);
+      setUser(null);
+      setMessage("Signed out successfully!");
+      setError(false);
+    } catch (err) {
+      setError(false);
+      setMessage("");
     }
   };
 
+  // ------------ clearError (same name) -------------
   const clearError = () => {
-    dispatch({ type: CLEAR_ERROR_MESSAGE });
-  };
-
-  const changeLoadingState = () => {
-    dispatch({ type: TOGGLE_LOADING });
+    setError(false);
+    setMessage("");
   };
 
   return (
     <AuthContext.Provider
       value={{
-        user: state.user,
-        message: state.message,
-        error: state.error,
-        loading: state.loading,
+        user,
+        error,
+        message,
+        loading,
+
         login,
-        logout,
         signup,
+        logout,
         clearError,
         setAuthUser,
         changeLoadingState,
@@ -108,4 +108,5 @@ const AuthState = ({ children }) => {
   );
 };
 
-export default AuthState;
+export default AuthProvider;
+

@@ -2,7 +2,7 @@ import React, { useEffect, useContext, useState } from "react";
 import { doc, getDoc, updateDoc, setDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import Loader from "../../components/UI/Loader/Loader";
-import AuthContext from "../../context/Auth/AuthContext";
+import {AuthContext} from "../../context/Auth/AuthState";
 import ProductList from "../../components/Product/ProductList/ProductList";
 import styles from "./CartPage.module.css";
 import { toast } from "react-toastify";

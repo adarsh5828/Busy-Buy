@@ -1,29 +1,28 @@
-import { useReducer } from "react";
-import ProductsContext from "./ProductsContext";
-import ProductsReducer from "./ProductsReducer";
+import { createContext, useState } from "react";
 import { collection, query, getDocs } from "firebase/firestore";
 import { db } from "../../config/firebase";
-import {
-  SET_PRODUCTS,
-  SET_ERROR,
-  TOGGLE_LOADING,
-  SET_FILTERED_PRODUCTS,
-} from "./types";
 
-const AuthState = ({ children }) => {
-  const initialState = {
-    loading: false,
-    products: [],
-    filteredProducts: [],
-    cartProducts: [],
-    error: "",
+const ProductsContext = createContext();
+
+export const ProductsProvider = ({ children }) => {
+  // ---------------- STATE ----------------
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [cartProducts, setCartProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // ---------------- toggleLoading (same name) ----------------
+  const toggleLoading = () => {
+    setLoading((prev) => !prev);
   };
 
-  const [state, dispatch] = useReducer(ProductsReducer, initialState);
-
+  // ---------------- getAllProducts (same name) ----------------
   const getAllProducts = async () => {
+    toggleLoading();
+    setError("");
+
     try {
-      dispatch({ type: TOGGLE_LOADING });
       const productsRef = collection(db, "products");
       const productsSnapshot = await getDocs(query(productsRef));
 
@@ -31,13 +30,16 @@ const AuthState = ({ children }) => {
         ...doc.data(),
       }));
 
-      dispatch({ type: SET_PRODUCTS, payload: productsData });
-    } catch (error) {
-      dispatch({ type: SET_ERROR, payload: error.message });
+      setProducts(productsData);
+      setFilteredProducts(productsData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      toggleLoading();
     }
   };
 
-  // Function to filter and search products
+  // ---------------- filterProducts (same name) ----------------
   const filterProducts = (filterObj) => {
     const {
       searchQuery,
@@ -45,47 +47,51 @@ const AuthState = ({ children }) => {
       categories: { mensFashion, womensFashion, jewelery, electronics },
     } = filterObj;
 
-    let filteredProducts = state.products;
+    let filtered = products;
+
+    // Search by title
     if (searchQuery) {
-      filteredProducts = filteredProducts.filter((product) => {
-        return product.title.toLowerCase().includes(searchQuery.toLowerCase());
-      });
+      filtered = filtered.filter((p) =>
+        p.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
+
+    // Category filtering
     if (mensFashion || womensFashion || jewelery || electronics) {
-      filteredProducts = filteredProducts.filter((product) => {
-        if (mensFashion && product.category === "men's clothing") {
-          return true;
-        }
-        if (womensFashion && product.category === "women's clothing") {
-          return true;
-        }
-        if (electronics && product.category === "electronics") {
-          return true;
-        }
-        if (jewelery && product.category === "jewelery") {
-          return true;
-        }
+      filtered = filtered.filter((p) => {
+        if (mensFashion && p.category === "men's clothing") return true;
+        if (womensFashion && p.category === "women's clothing") return true;
+        if (electronics && p.category === "electronics") return true;
+        if (jewelery && p.category === "jewelery") return true;
         return false;
       });
     }
 
+    // Price filter
     if (priceRange) {
-      filteredProducts = filteredProducts.filter((product) => {
-        return product.price < priceRange;
-      });
+      filtered = filtered.filter((p) => p.price < priceRange);
     }
 
-    dispatch({ type: SET_FILTERED_PRODUCTS, payload: filteredProducts });
+    setFilteredProducts(filtered);
   };
 
   return (
     <ProductsContext.Provider
       value={{
-        products: state.products,
-        filteredProducts: state.filteredProducts,
-        loading: state.loading,
+        products,
+        filteredProducts,
+        cartProducts,
+        loading,
+        error,
+
+        // SAME function names
         getAllProducts,
         filterProducts,
+        setProducts,
+        setFilteredProducts,
+        setCartProducts,
+        setError,
+        toggleLoading,
       }}
     >
       {children}
@@ -93,4 +99,4 @@ const AuthState = ({ children }) => {
   );
 };
 
-export default AuthState;
+export default ProductsContext;

@@ -1,5 +1,5 @@
 import React, { useRef, useContext, useEffect } from "react";
-import AuthContext from "../../context/Auth/AuthContext";
+import {AuthContext} from "../../context/Auth/AuthState";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import styles from "./LoginPage.module.css";

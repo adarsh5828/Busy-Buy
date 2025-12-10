@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import styles from "./HomePage.module.css";
 import Loader from "../../components/UI/Loader/Loader";
 import ProductList from "../../components/Product/ProductList/ProductList";
-import ProductsContext from "../../context/Products/ProductsContext";
+import ProductsContext from "../../context/Products/ProductsState";
 import FilterSidebar from "../../components/FilterSidebar/FilterSidebar";
 // import { getAuth } from "firebase/auth";
  import { addDataToCollection } from "../../utils/utils";

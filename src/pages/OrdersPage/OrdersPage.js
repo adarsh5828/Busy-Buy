@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { db } from "../../config/firebase";
 import { getDoc, doc } from "firebase/firestore";
-import AuthContext from "../../context/Auth/AuthContext";
+import {AuthContext} from "../../context/Auth/AuthState";
 import { getProductsUsingProductIds } from "../../utils/utils";
 import Loader from "../../components/UI/Loader/Loader";
 import styles from "./OrdersPage.module.css";

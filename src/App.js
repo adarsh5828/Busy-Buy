@@ -11,8 +11,8 @@ import Navbar from "./components/Navbar/Navbar";
 import CartPage from "./pages/CartPage/CartPage";
 import OrdersPage from "./pages/OrdersPage/OrdersPage";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import AuthContext from "./context/Auth/AuthContext";
-import ProductsContextProvider from "./context/Products/ProductsState";
+import {AuthContext} from "./context/Auth/AuthState";
+import {ProductsProvider} from "./context/Products/ProductsState";
 
 function App() {
   const auth = getAuth();
@@ -30,7 +30,7 @@ function App() {
 
   return (
     <div className="App">
-      <ProductsContextProvider>
+      <ProductsProvider>
         <ToastContainer
           position="top-right"
           autoClose={2000}
@@ -54,7 +54,7 @@ function App() {
           {/* NotFoundPage would be rendered if an invalid route is tried to access */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-      </ProductsContextProvider>
+      </ProductsProvider>
     </div>
   );
 }

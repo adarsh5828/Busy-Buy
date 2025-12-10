@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import styles from "./ProductDetails.module.css";
 import { toast } from "react-toastify";
-import AuthContext from "../../../../context/Auth/AuthContext";
+import {AuthContext} from "../../../../context/Auth/AuthState";
 import { useNavigate } from "react-router-dom";
 import { updateDoc, setDoc } from "firebase/firestore";
 import MinusIcon from "../../../UI/Icons/MinusIcon";
